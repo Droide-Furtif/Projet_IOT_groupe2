@@ -19,7 +19,7 @@
             </div>
             <div class="data">
                 <h2>Temperature</h2>
-                <p>{{ data['temp'] }} °C</p>
+                <p id="temp">Loading...</p>
             </div>
         </div>
         <div class="card">
@@ -28,7 +28,7 @@
             </div>
             <div class="data">
                 <h2>Pressure</h2>
-                <p>{{ data['pression'] }} hPa</p>
+                <p id="pressure">Loading...</p>
             </div>
         </div>
         <div class="card">
@@ -37,7 +37,7 @@
             </div>
             <div class="data">
                 <h2>Humidity</h2>
-                <p>{{ data['humid'] }} %</p>
+                <p id="humidity">Loading...</p>
             </div>
         </div>
     </div>
@@ -53,6 +53,21 @@
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
+
+        function fetchData() {
+            fetch('/pico-data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('temp').textContent = data.message.temp + ' °C';
+                        document.getElementById('pressure').textContent = data.message.pression + ' hPa';
+                        document.getElementById('humidity').textContent = data.message.humid + ' %';
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        setInterval(fetchData, 5000);  // Fetch data every 5 seconds
+        fetchData();  // Initial fetch
     </script>
 </body>
 </html>
