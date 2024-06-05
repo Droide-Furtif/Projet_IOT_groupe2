@@ -7,7 +7,7 @@ class Database:
 		self.client = None
 		self.db = None
 		self.sensor_station = None
-		self.statements = None
+		self.statement = None
 		self.init_db()
 
 
@@ -17,7 +17,7 @@ class Database:
 			self.client.server_info()
 			self.db = self.client['METEO_CENTER']
 			self.sensor_station = self.db['Sensor_Station']
-			self.statements = self.db['Statements']
+			self.statement = self.db['Statement']
 			print("Connexion à la base de données réussie")
 		except errors.ServerSelectionTimeoutError as err:
 			print(f"Erreur de connexion à la base de données : {err}")
@@ -39,4 +39,26 @@ class Database:
 				return 0
 		else:
 			print("La collection 'Sensor_Station' n'est pas disponible")
+			return 0
+
+	def adding_statement(self, temperature, humidity, pressure):
+		if self.statement is not None:
+			date = date.today().strftime("%d-%m-%Y")
+			time = date.time()strftime("%H:%M:%S")
+			statement_data = {
+				"temperature": temperature,
+				"humidity": humidity,
+				"pressure": pressure,
+				"date": date,
+				"time"
+			}
+			try:
+				result = self.statement.insert_one(statement_data)
+				print(f"Données transmises avec succès.\r ID : {result.inserted_id}")
+				return 1
+			except errors.PyMongoError as e:
+				print(f"Erreur lors de l'insertion des données : {e}")
+				return 0
+		else:
+			print("La collection 'Statement' n'est pas disponible")
 			return 0
