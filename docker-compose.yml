@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  reverse-proxy:
+    image: traefik:latest
+    container_name: "traefik"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=toto@toto.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: always
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  flask-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flask-app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/dev
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flask-app.rule=Host(`groupe2.learn-it.ovh`)"
+      - "traefik.http.routers.flask-app.entrypoints=websecure"
+      - "traefik.http.routers.flask-app.tls.certresolver=myresolver"
+      - "traefik.http.routers.flask-app.service=flask-appService"
+      - "traefik.http.services.flask-appService.loadBalancer.server.port=5000"
+    volumes:
+      - ./backend/src:/usr/src/app
+
+volumes:
+  mongo-data:
+
