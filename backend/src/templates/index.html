@@ -45,9 +45,11 @@
             <form id="messageForm">
                 <input type="text" id="messageInput" placeholder="Enter your message" required>
                 <button type="submit">Send</button>
+                <button type="button" id="clearButton">Clear</button>
             </form>
             <p id="messageStatus"></p>
         </div>
+        
     </div>
     <script>
         function updateDateTime() {
@@ -106,6 +108,35 @@
 
             document.getElementById('messageInput').value = '';  // Clear the input field
         });
+        document.getElementById('clearButton').addEventListener('click', function() {
+    const message = 'NONE';
+
+    fetch('/message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('messageStatus').textContent = 'Message cleared successfully!';
+            document.getElementById('messageStatus').style.color = 'green';
+        } else {
+            document.getElementById('messageStatus').textContent = 'Error clearing message.';
+            document.getElementById('messageStatus').style.color = 'red';
+        }
+    })
+    .catch(error => {
+        document.getElementById('messageStatus').textContent = 'Error clearing message.';
+        document.getElementById('messagePartStatus').style.color = 'red';
+        console.error('Error:', error);
+    });
+
+    document.getElementById('messageInput').value = '';  // Clear the input field after sending the message
+});
+
     </script>
 </body>
 </html>
