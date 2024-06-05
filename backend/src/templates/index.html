@@ -3,101 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Documentation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        #message-display {
-            background-color: #e9ecef;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <title>Sensor Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>API Documentation</h1>
-        <nav>
-            <ul>
-                <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#auth">Authentication</a></li>
-                <li><a href="#endpoints">Endpoints</a></li>
-                <li><a href="#send-message">Send Message</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="introduction">
-            <h2>Introduction</h2>
-            <p>Welcome to the API documentation. This API allows you to interact with our service programmatically. Below you will find details on how to authenticate and use the various endpoints available.</p>
-        </section>
-        <section id="auth">
-            <h2>Authentication</h2>
-            <p>To use the API, you need to authenticate using an API key. Include the API key in the header of your requests.</p>
-            <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
-        </section>
-        <section id="endpoints">
-            <h2>Endpoints</h2>
-            <article class="endpoint" id="get-users">
-                <div class="route-title">
-                    <h3 class="route-name">GET /users</h3>
-                </div>
-                <p>Retrieve a list of users.</p>
-                <pre><code>GET /users</code></pre>
-                <h4>Response</h4>
-                <pre><code>{
-    "users": [
-        {
-            "id": 1,
-            "name": "John Doe",
-            "email": "john.doe@example.com"
-        },
-        {
-            "id": 2,
-            "name": "Jane Doe",
-            "email": "jane.doe@example.com"
-        }
-    ]
-}</code></pre>
-            </article>
-            <article class="endpoint" id="post-user">
-                <div class="route-title">
-                    <h3 class="route-name">POST /users</h3>
-                </div>
-                <p>Create a new user.</p>
-                <pre><code>POST /users</code></pre>
-                <h4>Request Body</h4>
-                <pre><code>{
-    "name": "New User",
-    "email": "new.user@example.com"
-}</code></pre>
-                <h4>Response</h4>
-                <pre><code>{
-    "id": 3,
-    "name": "New User",
-    "email": "new.user@example.com"
-}</code></pre>
-            </article>
-            <!-- Add more endpoint documentation as needed -->
-        </section>
-        <section id="send-message">
-            <h2>Send Message</h2>
-            <form id="message-form">
-                <label for="message">Message:</label>
-                <input type="text" id="message" name="message" required>
+    <div class="container">
+        <h1>Sensor Data</h1>
+        <div class="datetime">
+            <p id="datetime"></p>
+        </div>
+        <div class="card">
+            <div class="icon">
+                <i class="fas fa-thermometer-half"></i>
+            </div>
+            <div class="data">
+                <h2>Temperature</h2>
+                <p id="temp">Loading...</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="data">
+                <h2>Pressure</h2>
+                <p id="pressure">Loading...</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="icon">
+                <i class="fas fa-water"></i>
+            </div>
+            <div class="data">
+                <h2>Humidity</h2>
+                <p id="humidity">Loading...</p>
+            </div>
+        </div>
+        <div class="message-form">
+            <h2>Send Message to Sensor</h2>
+            <form id="messageForm">
+                <input type="text" id="messageInput" placeholder="Enter your message" required>
                 <button type="submit">Send</button>
             </form>
-            <div id="message-display"></div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2024 Your Company. All rights reserved.</p>
-    </footer>
+            <p id="messageStatus"></p>
+        </div>
+    </div>
     <script>
-        document.getElementById('message-form').addEventListener('submit', function(event) {
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            };
+            const dateTimeString = now.toLocaleDateString('en-US', options);
+            document.getElementById('datetime').textContent = dateTimeString;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        function fetchData() {
+            fetch('/pico-data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('temp').textContent = data.message.temp + ' °C';
+                        document.getElementById('pressure').textContent = data.message.pression + ' hPa';
+                        document.getElementById('humidity').textContent = data.message.humid + ' %';
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        setInterval(fetchData, 5000);  // Fetch data every 5 seconds
+        fetchData();  // Initial fetch
+
+        document.getElementById('messageForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const message = document.getElementById('message').value;
+            const message = document.getElementById('messageInput').value;
+
             fetch('/message', {
                 method: 'POST',
                 headers: {
@@ -108,26 +91,21 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    displayMessage(message);
+                    document.getElementById('messageStatus').textContent = 'Message sent successfully!';
+                    document.getElementById('messageStatus').style.color = 'green';
                 } else {
-                    alert('Error: ' + data.message);
+                    document.getElementById('messageStatus').textContent = 'Error sending message.';
+                    document.getElementById('messageStatus').style.color = 'red';
                 }
+            })
+            .catch(error => {
+                document.getElementById('messageStatus').textContent = 'Error sending message.';
+                document.getElementById('messageStatus').style.color = 'red';
+                console.error('Error:', error);
             });
+
+            document.getElementById('messageInput').value = '';  // Clear the input field
         });
-
-        function displayMessage(message) {
-            document.getElementById('message-display').innerText = 'Message: ' + message;
-        }
-
-        function fetchMessage() {
-            fetch('/get_message')
-            .then(response => response.json())
-            .then(data => {
-                displayMessage(data.message);
-            });
-        }
-
-        fetchMessage(); // Fetch the current message when the page loads
     </script>
 </body>
 </html>
