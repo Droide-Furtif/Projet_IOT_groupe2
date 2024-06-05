@@ -18,6 +18,15 @@ h1 {
     margin-bottom: 20px;
 }
 
+.datetime {
+    margin-bottom: 20px;
+}
+
+.datetime p {
+    font-size: 1.2em;
+    color: #777;
+}
+
 .card {
     background-color: #fff;
     border-radius: 10px;
