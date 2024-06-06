@@ -17,10 +17,23 @@
 
     var lcd = null;
 
+    function formatAndWriteLCD(str1, str2) {
+    // Calculer le nombre d'espaces nécessaires pour atteindre 40 caractères
+      const spacesCount = 40 - str1.length;
+
+    // Créer une chaîne d'espaces de la longueur calculée
+      const spaces = ' '.repeat(spacesCount);
+
+    // Concaténer les deux chaînes avec les espaces entre elles
+      const formattedString = `${str1}${spaces}${str2}`;
+
+      lcd.writeString(formattedString);
+    }
+
     vrEmuLcd.setLoadedCallback(function () {
-      lcd = vrEmuLcd.newLCD(16, 2, vrEmuLcd.CharacterRom.Eurpoean);
+      lcd = vrEmuLcd.newLCD(16, 2, vrEmuLcd.CharacterRom.European);
       lcd.sendCommand(LCD_CMD_DISPLAY | LCD_CMD_DISPLAY_ON);
-      lcd.writeString("Je m'appelle ekiekekkekekekekekeke \n\r cococococ");
+      formatAndWriteLCD("Bonjour", "le cesi :)");
       lcd.render(ctx, 0, 0, 200, 100);
 
       var lcd1602 = document.getElementById("lcd1602");
