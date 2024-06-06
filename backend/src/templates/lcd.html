@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LCD Display</title>
+  <script src="https://visrealm.github.io/vrEmuLcd/src/vrEmuLcd.js"></script>
+  <script src="https://visrealm.github.io/vrEmuLcd/bin/vrEmuLcdWasm.js"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+</head>
+<body>
+  <canvas id="lcd" width="400"></canvas>
+  <img id="lcd1602" src="../static/images/lcd1602.png" style="display:none;" alt="lcd background" />
+  <script>
+    var canv = document.getElementById('lcd');
+    var ctx = canv.getContext('2d');
+
+    var lcd = null;
+
+    vrEmuLcd.setLoadedCallback(function () {
+      lcd = vrEmuLcd.newLCD(16, 2, vrEmuLcd.CharacterRom.Eurpoean);
+      lcd.sendCommand(LCD_CMD_DISPLAY | LCD_CMD_DISPLAY_ON);
+      lcd.writeString("Je m'appelle ekiekekkekekekekekeke \n\r cococococ");
+      lcd.render(ctx, 0, 0, 200, 100);
+
+      var lcd1602 = document.getElementById("lcd1602");
+      lcd1602.onload = function() {
+        lcdLoop();
+      };
+
+      // Si l'image est déjà chargée
+      if (lcd1602.complete) {
+        lcdLoop();
+      }
+    });
+
+    function lcdLoop() {
+      if (lcd != null) {
+        var xOff = canv.width * 0.20;
+        var yOff = canv.height * 0.20;
+        var width = canv.width ;
+        var height = canv.height ;
+        var scale = Math.min(height / lcd1602.height, width / lcd1602.width);
+
+        ctx.clearRect(0, 0, canv.width, canv.height); // Clear canvas
+        lcd.render(ctx, xOff + (76 * scale), yOff + (122 * scale), 710 * scale, 158 * scale);
+        ctx.drawImage(lcd1602, xOff, yOff, lcd1602.width * scale, lcd1602.height * scale);
+      }
+      window.setTimeout(lcdLoop, 50);
+    }
+  </script>
+</body>
+</html>
