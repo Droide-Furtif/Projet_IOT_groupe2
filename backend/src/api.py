@@ -50,7 +50,6 @@ def set_message():
 
 @app.route('/', methods=['GET'])
 def index():
-	print("ah")
 	return render_template('index.html', data=data)
 
 # Route pour ajouter une nouvelle station

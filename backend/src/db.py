@@ -54,11 +54,11 @@ class Database:
 		if self.sensor_station is not None :
 			query = {"Secret_Key": secret_key}
 			sensor_station = self.sensor_station.find(query)
-			if sensor_station.count() <> 0:
+			if sensor_station.count() != 0:
 				id_sensor_station = sensor_station.get("_id")
 				if self.statement is not None:
 					date = date.today().strftime("%d-%m-%Y")
-					time = date.today()strftime("%H:%M:%S")
+					time = date.today().strftime("%H:%M:%S")
 					statement_data = {
 						"Id_Sensor_Station_F": id_sensor_station,
 						"Temperature": temperature,
