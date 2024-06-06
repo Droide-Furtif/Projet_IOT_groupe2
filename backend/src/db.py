@@ -1,5 +1,5 @@
 from pymongo import MongoClient, errors
-from datetime import date
+from datetime import datetime
 import os
 
 class Database:
@@ -21,6 +21,14 @@ class Database:
 			print("Connexion à la base de données réussie")
 		except errors.ServerSelectionTimeoutError as err:
 			print(f"Erreur de connexion à la base de données : {err}")
+
+	def retrieve_statements(self):
+		try:
+			results = self.statement.find({})
+			return list(results)  # Convertit le curseur en liste de dictionnaires
+		except errors.PyMongoError as e:
+			print(f"Erreur lors de la récupération des données : {e}")
+			return []
 
 	def adding_sensor_station(self, mac_id, city):
 		if self.sensor_station is not None:
@@ -72,3 +80,4 @@ class Database:
 		else:
 			print("La collection 'Sensor_Station' n'est pas disponible")
 			return 0
+
