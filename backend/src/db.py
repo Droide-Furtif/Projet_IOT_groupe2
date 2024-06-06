@@ -10,7 +10,6 @@ class Database:
 		self.statement = None
 		self.init_db()
 
-
 	def init_db(self):
 		try:
 			self.client = MongoClient(host='mongodb', port=27017, serverSelectionTimeoutMS=5000)
@@ -30,12 +29,14 @@ class Database:
 			print(f"Erreur lors de la récupération des données : {e}")
 			return []
 
-	def adding_sensor_station(self, mac_id, city):
+	def adding_sensor_station(self, mac_id, secret_key, name, city):
+		'''Adding a sensor station with the mac Id, the secret key, the name and the city of the sensor.'''
 		if self.sensor_station is not None:
 			creation_date = date.today().strftime("%d-%m-%Y")
 			sensor_station_data = {
 				"Mac_id": mac_id,
 				"Secret_Key": secret_key,
+				"Name": name,
 				"City": city,
 				"Creation_date": creation_date
 			}
@@ -51,10 +52,13 @@ class Database:
 			return 0
 
 	def adding_statement(self, secret_key, temperature, humidity, pressure):
+		'''Adding a statement linked to a sensor station. Needing secret key, the temperatyre, the humidity and the pressure.'''
 		if self.sensor_station is not None :
+			# Check if the sensor station exist with the secret key
 			query = {"Secret_Key": secret_key}
 			sensor_station = self.sensor_station.find(query)
 			if sensor_station.count() != 0:
+				# Set the sensor station id to link the statement with the sensor.
 				id_sensor_station = sensor_station.get("_id")
 				if self.statement is not None:
 					date = date.today().strftime("%d-%m-%Y")
