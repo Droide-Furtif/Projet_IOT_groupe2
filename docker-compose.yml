@@ -31,7 +31,11 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - ./db-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=dicesil2
+      - MONGO_INITDB_DATABASE=METEO_CENTER
 
   flask-app:
     build:
@@ -43,7 +47,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_URI=mongodb://mongo:27017/dev
+      - MONGO_URI=mongodb://root:dicesil2@mongo:27017/?authSource=METEO_CENTER
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.flask-app.rule=Host(`groupe2.learn-it.ovh`)"
@@ -54,6 +58,20 @@ services:
     volumes:
       - ./backend/src:/usr/src/app
 
-volumes:
-  mongo-data:
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dicesil2
+      ME_CONFIG_MONGODB_URL: "mongodb://root:dicesil2@mongo:27017/"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=Host(`backend.groupe2.learn-it.ovh`)"
+      - "traefik.http.routers.admin.entrypoints=websecure"
+      - "traefik.http.routers.admin.tls.certresolver=myresolver"
+      - "traefik.http.routers.admin.service=adminService"
+      - "traefik.http.services.adminService.loadBalancer.server.port=8081"
+
+
 
