@@ -5,6 +5,7 @@ from collections import OrderedDict
 class Db_Model:
     def __init__(self,uri):
         self.uri = os.environ['MONGO_URI']
+        self.client = None
 		self.db = None
         self.db_name = None
 		self.collection = None
@@ -21,33 +22,35 @@ class Db_Model:
 			print(f"Erreur de connexion à la base de données : {err}")
 
     def add_collection_model(self, schema):
-        collection = self.collection_name
-        validator = {'$jsonSchema': {'bsonType': 'object', 'properties': {}}}
-        required = []
-
-        for field_key in schema:
-        field = chema[field_key]
-        properties = {'bsonType': field['type']}
-        minimum = field.get('minlength')
-
-        if type(minimum) == int:
-            properties['minimum'] = minimum
-
-        if field.get('required') is True: required.append(field_key)
-            validator['$jsonSchema']['properties'][field_key] = properties
-
-        if len(required) > 0:
-            validator['$jsonSchema']['required'] = required
-            query = [('collMod', collection),('validator', validator)]
-
         try:
-            print("Collection ajoutée")
-            db.create_collection(collection)
-        except CollectionInvalid as e:
-            print(f"Problème lors de l'ajout de la collection : \n{e}")
+            collection = {self.collection_name, schema}
+            validator = {'$jsonSchema': {'bsonType': 'object', 'properties': {}}}
+            required = []
 
-        command_result = db.command(OrderedDict(query))
-        return command_result
+            for field_key in schema:
+            field = schema[field_key]
+            properties = {'bsonType': field['type']}
+            minimum = field.get('minlength')
+
+            if type(minimum) == int:
+                properties['minimum'] = minimum
+
+            if field.get('required') is True: required.append(field_key)
+                validator['$jsonSchema']['properties'][field_key] = properties
+
+            if len(required) > 0:
+                validator['$jsonSchema']['required'] = required
+                query = [('collMod', collection),('validator', validator)]
+
+            try:
+                print("Collection ajoutée")
+                db.create_collection(collection)
+            except CollectionInvalid as e:
+                print(f"Collection invalide : \n{e}")
+
+            command_result = db.command(OrderedDict(query))
+        except errors.ServerSelectionTimeoutError as err:
+			print(f"Problème lors de l'ajout de la collection : \n{err}")
 
 # Exemple of schema to create a colection
 # user_schema = {
