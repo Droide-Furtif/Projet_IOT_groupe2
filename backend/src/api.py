@@ -1,20 +1,18 @@
 #!venv/bin/python3.11
-
-import json
+from json import *
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import db
+from db import *
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-print('coucou')
-uri = 'mongodb://root:dicesil2@mongo:27017/METEO_CENTER'
-database = db.Database(uri)
+uri = os.environ['MONGO_URI']
+db_name = os.environ['MONGO_DB_NAME']
+database = Database(uri,db_name)
 data = {}
 message = ""
-
-database.adding_sensor_station("ff:ff", "test", "Nancy")
 
 # Route pour recevoir les données du pico
 @app.route("/pico-data", methods=["POST"])

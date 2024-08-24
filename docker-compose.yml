@@ -1,41 +1,41 @@
 version: '3.8'
 
 services:
-  reverse-proxy:
-    image: traefik:latest
-    container_name: "traefik"
-    command:
-      # - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=toto@toto.com"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - "./letsencrypt:/letsencrypt"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    restart: always
+  # reverse-proxy:
+  #   image: traefik:latest
+  #   container_name: "traefik"
+  #   command:
+  #     # - "--log.level=DEBUG"
+  #     - "--api.insecure=true"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #     - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+  #     - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+  #     - "--entrypoints.websecure.address=:443"
+  #     - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+  #     - "--certificatesresolvers.myresolver.acme.email=toto@toto.com"
+  #     - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   volumes:
+  #     - "./letsencrypt:/letsencrypt"
+  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  #   restart: always
 
   mongo:
     image: mongo:latest
     container_name: mongodb
+    restart: always
     ports:
       - "27017:27017"
     volumes:
       - ./db-data:/data/db
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=dicesil2
-      - MONGO_INITDB_DATABASE=METEO_CENTER
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: dicesil2
+      MONGO_INITDB_DATABASE: METEO_CENTER
 
   flask-app:
     build:
@@ -47,31 +47,40 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_URI=mongodb://root:dicesil2@mongo:27017/?authSource=METEO_CENTER
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.flask-app.rule=Host(`groupe2.learn-it.ovh`)"
-      - "traefik.http.routers.flask-app.entrypoints=websecure"
-      - "traefik.http.routers.flask-app.tls.certresolver=myresolver"
-      - "traefik.http.routers.flask-app.service=flask-appService"
-      - "traefik.http.services.flask-appService.loadBalancer.server.port=5000"
+      MONGO_URI: mongodb://root:dicesil2@mongo:27017/
+      MONGO_DB_NAME: METEO_CENTER
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.flask-app.rule=Host(`groupe2.learn-it.ovh`)"
+    #   - "traefik.http.routers.flask-app.entrypoints=websecure"
+    #   - "traefik.http.routers.flask-app.tls.certresolver=myresolver"
+    #   - "traefik.http.routers.flask-app.service=flask-appService"
+    #   - "traefik.http.services.flask-appService.loadBalancer.server.port=5000"
     volumes:
       - ./backend/src:/usr/src/app
 
   mongo-express:
     image: mongo-express
+    container_name: mongo-express
     restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: dicesil2
+      ME_CONFIG_MONGODB_USERNAME: root
+      ME_CONFIG_MONGODB_PASSWORD: dicesil2
+      ME_CONFIG_BASICAUTH: true
       ME_CONFIG_MONGODB_URL: "mongodb://root:dicesil2@mongo:27017/"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.admin.rule=Host(`backend.groupe2.learn-it.ovh`)"
-      - "traefik.http.routers.admin.entrypoints=websecure"
-      - "traefik.http.routers.admin.tls.certresolver=myresolver"
-      - "traefik.http.routers.admin.service=adminService"
-      - "traefik.http.services.adminService.loadBalancer.server.port=8081"
-
-
-
+      ME_CONFIG_MONGODB_ENBALE_ADMIN: false
+      ME_CONFIG_BASICAUTH_ADMINUSERNAME: cesidil2user
+      ME_CONFIG_BASICAUTH_ADMINPASSWORD: /cesidil2password/
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.admin.rule=Host(`backend.groupe2.learn-it.ovh`)"
+    #   - "traefik.http.routers.admin.entrypoints=websecure"
+    #   - "traefik.http.routers.admin.tls.certresolver=myresolver"
+    #   - "traefik.http.routers.admin.service=adminService"
+    #   - "traefik.http.services.adminService.loadBalancer.server.port=8081"
+    volumes:
+      - ./config.js:/app/config.js
