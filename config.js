@@ -8,7 +8,7 @@ export default {
     // Number of databases to display in the UI (default: 5)
     max_databases: 5,
     // The name of the database to use for Mongo Express itself
-    admin: false,
+    admin: true,
   },
 
   site: {
@@ -20,8 +20,8 @@ export default {
 
   // Enable HTTP Basic authentication
   basicAuth: {
-    username: process.env.ME_CONFIG_MONGODB_USERNAME || 'root', //Default Username if env variable is empty
-    password: process.env.ME_CONFIG_MONGODB_PASSWORD || 'cesidil2', //Default Password if env variable is empty
+    username: process.env.ME_CONFIG_MONGODB_ADMINUSERNAME || 'root', //Default Username if env variable is empty
+    password: process.env.ME_CONFIG_MONGODB_ADMINPASSWORD || 'cesidil2', //Default Password if env variable is empty
   },
 
   //Set how collection will be displayed and how

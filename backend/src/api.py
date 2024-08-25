@@ -2,7 +2,7 @@
 from json import *
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from db import *
+import db
 import os
 
 app = Flask(__name__)
@@ -10,9 +10,12 @@ CORS(app)
 
 uri = os.environ['MONGO_URI']
 db_name = os.environ['MONGO_DB_NAME']
-database = Database(uri,db_name)
+database = db.Database(uri,db_name)
 data = {}
 message = ""
+
+#database.adding_sensor_station("ff:ff", "Name", "Nancy")
+print(database.retrieve_all_sensor_station())
 
 # Route pour recevoir les données du pico
 @app.route("/pico-data", methods=["POST"])
