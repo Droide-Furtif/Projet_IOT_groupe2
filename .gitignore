@@ -1,2 +1,4 @@
 **/venv
 letsencrypt
+backend/src/__pycache__
+db-data
