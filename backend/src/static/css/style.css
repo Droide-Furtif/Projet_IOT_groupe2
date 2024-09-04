@@ -94,6 +94,7 @@ h1 {
     transition: background-color 0.3s;
 }
 
+
 .message-form button:hover {
     background-color: #45a049;
 }
@@ -101,4 +102,17 @@ h1 {
 .message-form p {
     margin-top: 10px;
     font-size: 1em;
+}
+
+.blue {
+    color: #3aa0ee;
+}
+.red {
+    color: #fd4e4e;
+}
+.green {
+    color: #40b542;
+}
+.yellow {
+    color: #FFD43B;
 }

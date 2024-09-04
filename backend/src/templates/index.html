@@ -14,8 +14,8 @@
             <p id="datetime"></p>
         </div>
         <div class="card">
-            <div class="icon">
-                <i class="fas fa-thermometer-half"></i>
+            <div class="icon" id="tempIcon">
+                <i></i>
             </div>
             <div class="data">
                 <h2>Temperature</h2>
@@ -23,8 +23,8 @@
             </div>
         </div>
         <div class="card">
-            <div class="icon">
-                <i class="fas fa-tachometer-alt"></i>
+            <div class="icon" id="pressureIcon">
+                <i></i>
             </div>
             <div class="data">
                 <h2>Pressure</h2>
@@ -32,8 +32,8 @@
             </div>
         </div>
         <div class="card">
-            <div class="icon">
-                <i class="fas fa-water"></i>
+            <div class="icon" id="humidityIcon">
+                <i></i>
             </div>
             <div class="data">
                 <h2>Humidity</h2>
@@ -44,8 +44,10 @@
             <h2>Send Message to Sensor</h2>
             <form id="messageForm">
                 <input type="text" id="messageInput" placeholder="Enter your message" required>
-                <button type="submit">Send</button>
+                <div style="flex-direction: row;">
+                <button type="submit" >Send</button>
                 <button type="button" id="clearButton">Clear</button>
+            </div>
             </form>
             <p id="messageStatus"></p>
         </div>
@@ -63,15 +65,55 @@
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
-
+        
         function fetchData() {
+            
             fetch('/pico-data')
                 .then(response => response.json())
                 .then(data => {
+                   
                     if (data.status === 'success') {
-                        document.getElementById('temp').textContent = data.message.temp + ' °C';
-                        document.getElementById('pressure').textContent = data.message.pression + ' hPa';
-                        document.getElementById('humidity').textContent = data.message.humid + ' %';
+                        const tempElement = document.getElementById('temp');
+                        const tempIcon = document.getElementById('tempIcon').firstElementChild;
+                        const temperature = data.message.temp;
+
+                        tempElement.textContent = temperature + ' °C';
+
+                        if (temperature < 15) {
+                            tempIcon.className = 'fas fa-thermometer-empty blue';
+                        } else if (temperature > 25) {
+                            tempIcon.className = 'fas fa-thermometer-full red';
+                        } else {
+                            tempIcon.className = 'fas fa-thermometer-half green';
+                        }
+
+                        const humidityElement = document.getElementById('humidity');
+                        const humidityIcon = document.getElementById('humidityIcon').firstElementChild;
+                        const humidity = data.message.humid;
+
+                        humidityElement.textContent = humidity + ' %';
+
+                        if (humidity < 50) {
+                            humidityIcon.className = 'fas fa-tint-slash red';
+                        } else if (humidity > 80) {
+                            humidityIcon.className = 'fas fa-tint blue';
+                        } else {
+                            humidityIcon.className = 'fas fa-tint green';
+                        }
+
+                        const pressureElement = document.getElementById('pressure');
+                        const pressureIcon = document.getElementById('pressureIcon').firstElementChild;
+                        const pressure = data.message.pression;
+
+                        pressureElement.textContent = pressure + ' hPa';
+
+                        if (pressure < 1000) {
+                            pressureIcon.className = 'fas fa-cloud-rain blue';
+                        } else if (pressure > 1030) {
+                            pressureIcon.className = 'fas fa-sun yellow';
+                        } else {
+                            pressureIcon.className = 'fas fa-cloud-sun green';
+                        }
                     }
                 })
                 .catch(error => console.error('Error fetching data:', error));
