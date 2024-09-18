@@ -41,9 +41,14 @@
                 <p id="humidity">Loading...</p>
             </div>
         </div>
-        <div style="width:400px; height: auto; margin:50px; display: flex; flex-direction: row; justify-content: space-evenly;">
-            <canvas id="myChart1" width="400px" height="200px"></canvas>
-            <canvas id="myChart2" width="400px" height="200px"></canvas>
+        <div style="width:400px; height: auto; margin:auto; margin-top: 50px; display: flex; flex-direction: row; justify-content:center;">
+            <div class="canva" style="display: flex; margin: 0 30px"><canvas id="myChart1" width="450px" height="220px"></canvas>
+                    <span> Temperature moyenne : </span></div>
+            <div class="canva" style="display: flex; margin: 0 30px"><canvas id="myChart3" width="450px" height="220px"></canvas>
+                    <span> Pression moyenne : </span></div>
+            <div class="canva" style="display: flex; margin: 0 30px"><canvas id="myChart2" width="450px" height="220px"></canvas>
+                <span> Humidité moyenne : {{ moyennHum }} </span></div>
+            
         </div>
         <div class="message-form">
             <h2>Send Message to Sensor</h2>
@@ -74,15 +79,17 @@
         
         function fetchData() {
             
-            fetch('/pico-data')
+            fetch('http://176.163.138.162/pico-all-data')
                 .then(response => response.json())
                 .then(data => {
-                   
-                    
+                    console.log(data.temp);
+                    console.log(data.humid);
+                    console.log(data.pression);
+
                     if (data.status === 'success') {
                         const tempElement = document.getElementById('temp');
                         const tempIcon = document.getElementById('tempIcon').firstElementChild;
-                        const temperature = 10;
+                        const temperature = data.temp;
 
 
                         tempElement.textContent = temperature + ' °C';
@@ -97,7 +104,7 @@
 
                         const humidityElement = document.getElementById('humidity');
                         const humidityIcon = document.getElementById('humidityIcon').firstElementChild;
-                        const humidity = 32;
+                        const humidity = data.humid;
 
                         humidityElement.textContent = humidity + ' %';
 
@@ -111,7 +118,7 @@
 
                         const pressureElement = document.getElementById('pressure');
                         const pressureIcon = document.getElementById('pressureIcon').firstElementChild;
-                        const pressure = 820;
+                        const pressure = data.pression;
 
                         pressureElement.textContent = pressure + ' hPa';
 
@@ -187,7 +194,7 @@
     document.getElementById('messageInput').value = '';  // Clear the input field after sending the message
 });
 
-        const dataTemp = [10, 12, 15, 12, 17, -8, 10, 13, 15];
+        const dataTemp = [10, 12, 15, 12, 17, 8, 10, 13, 15];
         const labelsTemp = ['Jour 1', 'Jour 2', 'Jour 3', 'Jour 4', 'Jour 5', 'Jour 6', 'Jour 7', 'Jour 8', 'Jour 9'];
 
         // Configuration du graphique
@@ -199,7 +206,7 @@
                 datasets: [{
                     label: 'Variation de température',
                     data: dataTemp,
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderColor: '#fd4e4e',
                     borderWidth: 2,
                     fill: true
                 }]
@@ -218,6 +225,10 @@
 
         const dataHum = [50, 42, 65, 72, 67, 88, 70, 53, 65];
         const labelsHum = ['Jour 1', 'Jour 2', 'Jour 3', 'Jour 4', 'Jour 5', 'Jour 6', 'Jour 7', 'Jour 8', 'Jour 9'];
+        const moyennHum = dataHum.reduce(function (accumulateur, valeurCourante, index, array) {
+  return accumulateur + valeurCourante;
+});
+        console.log(moyennHum);
 
         // Configuration du graphique
         const ctx2 = document.getElementById('myChart2').getContext('2d');
@@ -228,7 +239,36 @@
                 datasets: [{
                     label: 'Variation de l\'humidité',
                     data: dataHum,
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderColor: '#3aa0ee',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'category'  // Échelle par défaut pour les catégories (étiquettes)
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const dataPress = [920, 942, 1015, 1072, 1017, 988, 950, 1003, 1055];
+        const labelsPress = ['Jour 1', 'Jour 2', 'Jour 3', 'Jour 4', 'Jour 5', 'Jour 6', 'Jour 7', 'Jour 8', 'Jour 9'];
+
+        // Configuration du graphique
+        const ctx3 = document.getElementById('myChart3').getContext('2d');
+        const chart3 = new Chart(ctx3, {
+            type: 'line',  // Type de graphique
+            data: {
+                labels: labelsPress,
+                datasets: [{
+                    label: 'Variation de la pression',
+                    data: dataPress,
+                    borderColor: '#FFD43B',
                     borderWidth: 2,
                     fill: true
                 }]
